@@ -8,20 +8,20 @@ const SEED: StudyTask[] = [
   { id: 'a3', title: '整理数据结构课堂笔记', subject: '专业课', due: '16:30', minutes: 40, done: true }
 ];
 
+let pref: preferences.Preferences | undefined;
 export class StudyStore {
-  private static pref: preferences.Preferences | undefined;
   static async load(context: Context): Promise<StudyTask[]> {
     try {
-      this.pref = await preferences.getPreferences(context, { name: 'studyflow' });
-      const raw = await this.pref.get(KEY, '') as string;
+      pref = await preferences.getPreferences(context, { name: 'studyflow' });
+      const raw = await pref.get(KEY, '') as string;
       if (raw.length > 0) return JSON.parse(raw) as StudyTask[];
-      await this.save(SEED);
+      await StudyStore.save(SEED);
     } catch (_) { return SEED; }
     return SEED;
   }
   static async save(tasks: StudyTask[]): Promise<void> {
-    if (!this.pref) return;
-    await this.pref.put(KEY, JSON.stringify(tasks));
-    await this.pref.flush();
+    if (!pref) return;
+    await pref.put(KEY, JSON.stringify(tasks));
+    await pref.flush();
   }
 }

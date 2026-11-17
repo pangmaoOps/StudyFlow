@@ -14,7 +14,6 @@ struct Index {
   @State private resources: StudyResource[] = [];
   @State private detailId: string = '';
   private stack: NavPathStack = new NavPathStack();
-  private titleInput: TextInputController = new TextInputController();
   aboutToAppear() { StudyStore.load(getContext(this)).then((v: StudyTask[]) => this.tasks = v); }
   private visibleTasks(): StudyTask[] {
     if (this.filter === 1) return this.tasks.filter((t: StudyTask) => !t.done);
@@ -23,7 +22,7 @@ struct Index {
   }
   private persist(): void { StudyStore.save(this.tasks); }
   private toggle(id: string): void {
-    this.tasks = this.tasks.map((t: StudyTask) => t.id === id ? { ...t, done: !t.done } : t);
+    this.tasks = this.tasks.map((t: StudyTask) => { const updated: StudyTask = { id: t.id, title: t.title, subject: t.subject, due: t.due, minutes: t.minutes, done: !t.done }; return t.id === id ? updated : t; });
     this.persist();
   }
   private openTask(id: string): void { this.detailId = id; this.stack.pushPath({ name: 'detail', param: id }); }
@@ -31,7 +30,7 @@ struct Index {
     AlertDialog.show({ title: '新建学习任务', message: '将在任务列表加入一项学习计划。', primaryButton: { value: '创建', action: () => {
       const task: StudyTask = { id: Date.now().toString(), title: '新的学习任务', subject: '专业课', due: '18:00', minutes: 30, done: false };
       this.tasks = [task, ...this.tasks]; this.persist();
-    } }, secondaryButton: { value: '取消' } });
+      } }, secondaryButton: { value: '取消', action: () => {} } });
   }
   private async refreshResources(): Promise<void> {
     this.resourceState = 'loading';
@@ -139,7 +138,14 @@ struct Index {
             List({ space: 8 }) { ForEach(this.resources.slice(0, 4), (r: StudyResource) => ListItem() { Column({ space: 4 }) { Text(r.title).fontSize(13).fontColor('#29334D').maxLines(2); Text(r.body).fontSize(11).fontColor('#9299A9').maxLines(2); }.alignItems(HorizontalAlign.Start).width('100%').padding(12).backgroundColor('#F7F7FB').borderRadius(12); }); }.height(230);
           }
         }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
-        Column({ space: 12 }) { Text('学科任务分布').fontSize(16).fontWeight(FontWeight.Bold).fontColor('#29334D'); ForEach(['数学','英语','专业课','其他'], (s: string) => { let count = this.tasks.filter((t: StudyTask) => t.subject === s).length; Row({ space: 10 }) { Text(s).fontSize(12).fontColor('#687188').width(56); Progress({ value: count, total: Math.max(this.tasks.length, 1), type: ProgressType.Linear }).color('#786AEC').layoutWeight(1); Text(count.toString()).fontSize(12).fontColor('#687188'); }.width('100%').height(20); }); }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
+        Column({ space: 12 }) {
+          Text('学科任务分布').fontSize(16).fontWeight(FontWeight.Bold).fontColor('#29334D');
+          ForEach(['数学','英语','专业课','其他'], (s: string) => Row({ space: 10 }) {
+            Text(s).fontSize(12).fontColor('#687188').width(56);
+            Progress({ value: this.tasks.filter((t: StudyTask) => t.subject === s).length, total: Math.max(this.tasks.length, 1), type: ProgressType.Linear }).color('#786AEC').layoutWeight(1);
+            Text(this.tasks.filter((t: StudyTask) => t.subject === s).length.toString()).fontSize(12).fontColor('#687188');
+          }.width('100%').height(20));
+        }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
       }.padding({ left: 20, right: 20, top: 24, bottom: 24 }).width('100%');
     }.scrollBar(BarState.Off);
   }
@@ -149,7 +155,7 @@ struct Index {
       Text('我的').fontSize(24).fontWeight(FontWeight.Bold).fontColor('#202A43').alignSelf(ItemAlign.Start);
       Row({ space: 14 }) { Text('知').fontSize(22).fontColor('#FFFFFF').width(52).height(52).textAlign(TextAlign.Center).backgroundColor('#7162E8').borderRadius(18); Column({ space: 5 }) { Text('智炜同学').fontSize(17).fontWeight(FontWeight.Bold).fontColor('#29334D'); Text('把每个目标变成今天的行动').fontSize(12).fontColor('#9299A9'); }.alignItems(HorizontalAlign.Start); }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
       this.statCard('每日学习目标', '120', '分钟');
-      Button('清除所有任务').width('100%').backgroundColor('#FFF0F0').fontColor('#CC5D63').onClick(() => AlertDialog.show({ title: '清除任务？', message: '此操作将删除本地任务列表。', primaryButton: { value: '清除', action: () => { this.tasks = []; this.persist(); } }, secondaryButton: { value: '取消' } }));
+      Button('清除所有任务').width('100%').backgroundColor('#FFF0F0').fontColor('#CC5D63').onClick(() => AlertDialog.show({ title: '清除任务？', message: '此操作将删除本地任务列表。', primaryButton: { value: '清除', action: () => { this.tasks = []; this.persist(); } }, secondaryButton: { value: '取消', action: () => {} } }));
       Text('StudyFlow · 智慧校园学习与任务管理系统').fontSize(11).fontColor('#A0A6B4').margin({ top: 20 });
     }.padding({ left: 20, right: 20, top: 24 }).width('100%').height('100%');
   }
@@ -174,8 +180,8 @@ struct Index {
         else if (this.tab === 3) { this.analysisPage(); }
         else { this.profilePage(); }
         Row() {
-          ForEach(['首页','任务','日历','分析','我的'], (label: string, i: number) => Column({ space: 3 }) { Text(['⌂','✓','▦','◌','○'][i]).fontSize(19); Text(label).fontSize(10); }
-            .layoutWeight(1).padding({ top: 9, bottom: 7 }).fontColor(this.tab === i ? '#7162E8' : '#9BA2B1').onClick(() => this.tab = i));
+          ForEach(['首页','任务','日历','分析','我的'], (label: string, i: number) => Column({ space: 3 }) { Text(['⌂','✓','▦','◌','○'][i]).fontSize(19).fontColor(this.tab === i ? '#7162E8' : '#9BA2B1'); Text(label).fontSize(10).fontColor(this.tab === i ? '#7162E8' : '#9BA2B1'); }
+            .layoutWeight(1).padding({ top: 9, bottom: 7 }).onClick(() => this.tab = i));
         }.width('100%').backgroundColor('#FFFFFF').padding({ bottom: 4 }).border({ color: '#ECEEF3', width: { top: 1 } });
       }.width('100%').height('100%').backgroundColor('#F5F6FA');
     }.mode(NavigationMode.Stack).hideTitleBar(true)
