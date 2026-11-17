@@ -1,0 +1,9 @@
+.hvigor/
+.idea/
+.preview/
+entry/build/
+entry/.preview/
+oh_modules/
+local.properties
+*.hap
+*.log
