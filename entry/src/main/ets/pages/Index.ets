@@ -126,7 +126,7 @@ struct Index {
           this.statCard('已记录学习', this.sessions.reduce((n: number, s: StudySession) => n + s.minutes, 0).toString(), '分钟');
         }.width('100%');
         Row({ space: 8 }) {
-          TextInput({ placeholder: '学习分钟', text: this.sessionInput }).type(InputType.Number).layoutWeight(1).backgroundColor('#FFFFFF').onChange((v: string) => this.sessionInput = v);
+          TextInput({ placeholder: '学习分钟', text: this.sessionInput }).type(InputType.Number).height(48).layoutWeight(1).backgroundColor('#FFFFFF').borderRadius(24).onChange((v: string) => this.sessionInput = v);
           Button('记录自习').fontSize(12).backgroundColor('#7162E8').onClick(() => this.recordStudy());
         }.width('100%');
       }.padding({ left: 20, right: 20, top: 22, bottom: 24 }).width('100%');
@@ -211,10 +211,17 @@ struct Index {
     Column({ space: 16 }) {
       Text('我的').fontSize(24).fontWeight(FontWeight.Bold).fontColor('#202A43').alignSelf(ItemAlign.Start);
       Row({ space: 14 }) { Text('知').fontSize(22).fontColor('#FFFFFF').width(52).height(52).textAlign(TextAlign.Center).backgroundColor('#7162E8').borderRadius(18); Column({ space: 5 }) { Text('智炜同学').fontSize(17).fontWeight(FontWeight.Bold).fontColor('#29334D'); Text('把每个目标变成今天的行动').fontSize(12).fontColor('#9299A9'); }.alignItems(HorizontalAlign.Start); }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
-      TextInput({ placeholder: '显示名称', text: this.displayNameInput }).onChange((v: string) => this.displayNameInput = v).backgroundColor('#FFFFFF');
-      TextInput({ placeholder: '每日目标分钟', text: this.goalInput }).type(InputType.Number).onChange((v: string) => this.goalInput = v).backgroundColor('#FFFFFF');
-      Button('保存个人设置').width('100%').backgroundColor('#7162E8').onClick(() => this.saveSettings());
-      this.statCard('每日学习目标', this.settings.dailyGoalMinutes.toString(), '分钟');
+      Column({ space: 8 }) {
+        Text('昵称（支持中文）').fontSize(12).fontColor('#687188').alignSelf(ItemAlign.Start);
+        TextInput({ placeholder: '请输入昵称', text: this.displayNameInput }).type(InputType.Normal).placeholderColor('#A0A6B4').height(50).padding({ left: 16, right: 16 }).borderRadius(25).backgroundColor('#FFFFFF').onChange((v: string) => this.displayNameInput = v);
+      }.width('100%');
+      Column({ space: 8 }) {
+        Text('每日学习目标（分钟）').fontSize(12).fontColor('#687188').alignSelf(ItemAlign.Start);
+        TextInput({ placeholder: '例如 120', text: this.goalInput }).type(InputType.Number).height(50).padding({ left: 16, right: 16 }).borderRadius(25).backgroundColor('#FFFFFF').onChange((v: string) => this.goalInput = v);
+      }.width('100%');
+      Button('保存个人设置').width('100%').height(48).backgroundColor('#7162E8').onClick(() => this.saveSettings());
+      Row() { this.statCard('每日学习目标', this.settings.dailyGoalMinutes.toString(), '分钟'); }
+        .width('100%').padding(16).backgroundColor('#FFFFFF').borderRadius(18);
       Button('清除所有任务').width('100%').backgroundColor('#FFF0F0').fontColor('#CC5D63').onClick(() => AlertDialog.show({ title: '清除任务？', message: '此操作将删除本地任务列表。', primaryButton: { value: '清除', action: () => { this.tasks = []; this.persist(); } }, secondaryButton: { value: '取消', action: () => {} } }));
       Text('StudyFlow · 智慧校园学习与任务管理系统').fontSize(11).fontColor('#A0A6B4').margin({ top: 20 });
     }.padding({ left: 20, right: 20, top: 24 }).width('100%').height('100%');
@@ -227,15 +234,15 @@ struct Index {
         Row() { Text('‹ 返回').fontSize(15).fontColor('#7162E8').onClick(() => this.stack.pop()); }.width('100%');
         Text(this.editingId.length > 0 ? '编辑任务' : '创建任务').fontSize(24).fontWeight(FontWeight.Bold).fontColor('#202A43');
         Text('任务标题 *').fontSize(12).fontColor('#687188');
-        TextInput({ placeholder: '例如：完成课程阅读', text: this.formTitle }).onChange((v: string) => this.formTitle = v).backgroundColor('#FFFFFF');
+        TextInput({ placeholder: '例如：完成课程阅读', text: this.formTitle }).type(InputType.Normal).placeholderColor('#A0A6B4').onChange((v: string) => this.formTitle = v).backgroundColor('#FFFFFF');
         Text('任务描述').fontSize(12).fontColor('#687188');
-        TextInput({ placeholder: '补充学习目标或备注', text: this.formDescription }).onChange((v: string) => this.formDescription = v).backgroundColor('#FFFFFF');
+        TextInput({ placeholder: '补充学习目标或备注', text: this.formDescription }).type(InputType.Normal).placeholderColor('#A0A6B4').onChange((v: string) => this.formDescription = v).backgroundColor('#FFFFFF');
         Text('学科分类').fontSize(12).fontColor('#687188');
         Row({ space: 6 }) { ForEach(['数学','英语','专业课','编程','其他'], (s: string) => Button(s).fontSize(11).fontColor(this.formSubject === s ? '#FFFFFF' : '#687188').backgroundColor(this.formSubject === s ? '#7162E8' : '#FFFFFF').onClick(() => this.formSubject = s)); }
         Text('优先级').fontSize(12).fontColor('#687188');
         Row({ space: 6 }) { ForEach(['高','中','低'], (s: string) => Button(s).fontSize(11).fontColor(this.formPriority === s ? '#FFFFFF' : '#687188').backgroundColor(this.formPriority === s ? '#7162E8' : '#FFFFFF').onClick(() => this.formPriority = s)); }
         Text('计划日期（YYYY-MM-DD）').fontSize(12).fontColor('#687188');
-        TextInput({ placeholder: '2026-11-17', text: this.formDate }).onChange((v: string) => this.formDate = v).backgroundColor('#FFFFFF');
+        TextInput({ placeholder: '2026-11-17', text: this.formDate }).type(InputType.Normal).placeholderColor('#A0A6B4').onChange((v: string) => this.formDate = v).backgroundColor('#FFFFFF');
         TextInput({ placeholder: '预计分钟数', text: this.formMinutes }).type(InputType.Number).onChange((v: string) => this.formMinutes = v).backgroundColor('#FFFFFF');
         Button('保存任务').width('100%').backgroundColor('#7162E8').onClick(() => this.saveTask(this.editingId, this.formTitle, this.formDescription, this.formSubject, this.formPriority, this.formDate, Number(this.formMinutes)));
         if (this.editingId.length > 0) { Button('删除任务').width('100%').backgroundColor('#FFF0F0').fontColor('#CC5D63').onClick(() => this.deleteTask(this.editingId)); }
@@ -268,8 +275,8 @@ struct Index {
         Row() {
           ForEach(['首页','任务','日历','分析','我的'], (label: string, i: number) => Column({ space: 3 }) { Text(['⌂','✓','▦','◌','○'][i]).fontSize(19).fontColor(this.tab === i ? '#7162E8' : '#9BA2B1'); Text(label).fontSize(10).fontColor(this.tab === i ? '#7162E8' : '#9BA2B1'); }
             .layoutWeight(1).padding({ top: 9, bottom: 7 }).onClick(() => { this.tab = i; if (i === 3 && this.resourceState === 'idle') this.refreshResources(); }));
-        }.width('100%').backgroundColor('#FFFFFF').padding({ bottom: 4 }).border({ color: '#ECEEF3', width: { top: 1 } });
-      }.width('100%').height('100%').backgroundColor('#F5F6FA');
+        }.width('100%').height(72).backgroundColor('#FFFFFF').padding({ left: 8, right: 8, bottom: 14, top: 6 }).border({ color: '#ECEEF3', width: { top: 1 } });
+      }.width('100%').height('100%').backgroundColor('#F5F6FA').padding({ bottom: 40 });
     }.mode(NavigationMode.Stack).hideTitleBar(true)
       .navDestination(this.pageForRoute).onAppear(() => { this.displayNameInput = this.settings.displayName; this.goalInput = this.settings.dailyGoalMinutes.toString(); });
   }
