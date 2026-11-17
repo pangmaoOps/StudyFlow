@@ -38,7 +38,7 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 | [HTTP 网络请求指南](https://developer.huawei.com/consumer/en/doc/harmonyos-guides/http-request/) | 核对 Network Kit、超时、响应码与异步请求 | 官方文档/API |
 | [Canvas 绘图指南](https://developer.huawei.com/consumer/en/doc/harmonyos-guides/arkts-drawing-customization-on-canvas/) | 评估原生动态图表能力 | 官方文档/API；本项目优先用原生 Progress 组件保证 Previewer 兼容 |
 
-兼容性依据：本地 SDK 路径 `DevEco Studio/sdk/default/openharmony`，工程 target SDK 26.0.0、compatible SDK 6.1.1。ArkTS 编译与 HAP 打包已通过；需要在 DevEco Previewer 中继续验证页面交互及其网络策略。
+兼容性依据：本地 SDK 路径 `DevEco Studio/sdk/default/openharmony`，工程 target SDK 26.0.0、compatible SDK 6.1.1。ArkTS 编译、PreviewBuild 编译与 HAP 打包已通过；本机 IDE 的 Previewer 面板仍显示加载失败，因此页面可视运行、交互与网络策略仍待复核。
 
 ## Previewer 复核步骤
 
