@@ -210,7 +210,15 @@ struct Index {
   private profilePage() {
     Column({ space: 16 }) {
       Text('我的').fontSize(24).fontWeight(FontWeight.Bold).fontColor('#202A43').alignSelf(ItemAlign.Start);
-      Row({ space: 14 }) { Text('知').fontSize(22).fontColor('#FFFFFF').width(52).height(52).textAlign(TextAlign.Center).backgroundColor('#7162E8').borderRadius(18); Column({ space: 5 }) { Text('智炜同学').fontSize(17).fontWeight(FontWeight.Bold).fontColor('#29334D'); Text('把每个目标变成今天的行动').fontSize(12).fontColor('#9299A9'); }.alignItems(HorizontalAlign.Start); }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
+      Row({ space: 14 }) {
+        Text(this.settings.displayName.trim().length > 0 ? this.settings.displayName.trim().slice(0, 1) : '我')
+          .fontSize(22).fontColor('#FFFFFF').width(52).height(52).textAlign(TextAlign.Center).backgroundColor('#7162E8').borderRadius(18);
+        Column({ space: 5 }) {
+          Text(this.settings.displayName.trim().length > 0 ? this.settings.displayName.trim() + '同学' : '同学')
+            .fontSize(17).fontWeight(FontWeight.Bold).fontColor('#29334D');
+          Text('把每个目标变成今天的行动').fontSize(12).fontColor('#9299A9');
+        }.alignItems(HorizontalAlign.Start);
+      }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
       Column({ space: 8 }) {
         Text('昵称（支持中文）').fontSize(12).fontColor('#687188').alignSelf(ItemAlign.Start);
         TextInput({ placeholder: '请输入昵称', text: this.displayNameInput }).type(InputType.Normal).placeholderColor('#A0A6B4').height(50).padding({ left: 16, right: 16 }).borderRadius(25).backgroundColor('#FFFFFF').onChange((v: string) => this.displayNameInput = v);
