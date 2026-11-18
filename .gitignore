@@ -1,6 +1,8 @@
 .hvigor/
 .idea/
 .preview/
+build/
+**/build/
 entry/build/
 entry/.preview/
 oh_modules/

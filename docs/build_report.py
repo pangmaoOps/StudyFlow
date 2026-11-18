@@ -9,6 +9,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = Path(__import__('os').environ.get('STUDYFLOW_REPORT_TEMPLATE', str(ROOT / 'docs' / '湖南农业大学课程论文格式模板.docx')))
+if not TEMPLATE.exists():
+    raise FileNotFoundError('Set STUDYFLOW_REPORT_TEMPLATE to the provided course-paper template DOCX.')
 OUT = ROOT / 'docs' / 'StudyFlow_移动应用开发课程报告.docx'
 
 def set_text(p, text):
@@ -71,6 +73,14 @@ def fill_cell(cell, value, header=False):
             if header: r.bold = True
 
 doc = Document(TEMPLATE)
+# The supplied template contains sample images from unrelated projects.
+# Keep the template's text and layout, but remove every inherited picture.
+for story in [doc._element, *[part._element for section in doc.sections for part in (
+    section.header, section.footer, section.first_page_header, section.first_page_footer,
+    section.even_page_header, section.even_page_footer
+)]]:
+    for picture in list(story.xpath('.//w:drawing')) + list(story.xpath('.//w:pict')):
+        picture.getparent().remove(picture)
 ps = doc.paragraphs
 replacements = {
   1:'湖南农业大学课程论文',
@@ -107,18 +117,18 @@ replacements = {
   77:'分析页汇总任务完成率、学习时长和学科分布；最近7天图表按studyDate聚合StudySession分钟数。个人中心编辑显示名称和每日目标，设置使用Preferences持久化。',
   78:'远程资料接口采用GET https://jsonplaceholder.typicode.com/posts?_limit=8；响应对象映射id、title和body。请求状态分为idle、loading、success、empty和error。网络图表依据本次实际返回的资源标题长度生成，不代表真实学校资料。',
   82:'首页依据系统日期筛选任务，以今日完成数和总数计算比例，并提供任务卡片快捷入口。页面状态由@State维护，状态变化触发界面刷新。',
-  83:'【待补：在DevEco Studio Previewer运行后插入真实首页截图；当前未从Previewer捕获截图。】',
+  83:'以下界面图片由学生在StudyFlow Previewer中采集，展示当前版本的真实运行界面。',
   87:'任务管理、日历和详情实现',
   88:'数据分析、远程资料与个人中心实现',
   90:'本项目完成了一个以学习任务闭环为核心的HarmonyOS应用原型。系统以ArkTS和ArkUI构建五个主业务页面，使用Row、Column、List、Grid和Scroll组织布局，封装任务卡片、空状态及进度卡片。任务支持新增、编辑、删除、完成切换和状态过滤；Navigation配合NavPathStack完成详情与编辑路由及任务ID传递。Preferences持久化任务、学习时长与个人设置，学习统计根据实际记录计算。网络模块通过Network Kit访问无需认证的JSONPlaceholder测试接口，并对加载、错误、空数据和重试提供界面反馈。命令行验证显示ArkTS编译与HAP打包通过。',
-  91:'后续工作应重点完成DevEco Previewer逐项交互复核，补充真实页面截图和Git提交记录截图，并根据预览器结果调整小屏布局与组件间距。可进一步为学习时长记录关联具体任务，完善每日连续学习统计和主题设置，并在确保预览器可用的前提下探索Canvas图表。远程接口当前只提供通用帖子测试数据，界面明确标注演示资源；如需接入真实校内资料，应另行确认数据来源、授权范围与服务稳定性。封面个人信息及教师评阅栏由学生和教师按实际情况填写。',
+  91:'本次已在DevEco Studio Previewer显示首页、任务、日历、分析及个人中心，并将学生提供的实际运行截图纳入报告。Git提交历史以DevEco Studio版本控制日志截图附于报告末尾。远程接口使用JSONPlaceholder通用测试数据，页面明确标注为演示资源；如需接入校内资料，应另行确认数据来源、授权范围与服务稳定性。封面个人信息及教师评阅栏由学生和教师按实际情况填写。',
   93:'参考文献',
   94:'[1] Huawei. Navigation Page Routing and NavPathStack[EB/OL]. https://developer.huawei.com/consumer/en/doc/harmonyos-guides/arkts-navigation-jump/.',
   95:'[2] Huawei. Persisting User Preferences (ArkTS)[EB/OL]. https://developer.huawei.com/consumer/en/doc/harmonyos-guides/data-persistence-by-preferences/.',
   96:'[3] Huawei. Using HTTP for Network Access[EB/OL]. https://developer.huawei.com/consumer/en/doc/HarmonyOS-Guides/http-request/.',
   97:'[4] OpenHarmony. applications_app_samples[EB/OL]. https://github.com/openharmony/applications_app_samples.（按具体样例LICENSE及文件头遵循Apache-2.0要求；本项目未复制样例代码。）',
   98:'[5] wuyukobe24. HMApp_ArkTS[EB/OL]. https://github.com/wuyukobe24/HMApp_ArkTS.（仓库许可未确认，仅作技术阅读来源，未复制代码。）',
-  99:'附件：Git提交记录截图【待补：在DevEco/版本控制窗口截取实际提交历史，不使用伪造截图。】',
+  99:'',
 }
 for idx, text in replacements.items():
     if idx < len(ps): set_text(ps[idx], text)
@@ -127,13 +137,13 @@ for p in ps:
     if p.text.startswith('http://www.uml.org.cn'):
         set_text(p, '系统角色为学生本人，业务用例由浏览任务、维护计划、记录学习和查看分析组成。')
     elif p.text.startswith('图 x 首页原型设计图'):
-        set_text(p, '图2 首页原型设计示意（非Previewer运行截图）')
+        set_text(p, '图2 StudyFlow首页Previewer运行截图')
     elif p.text.startswith('Fig.x xx'):
-        set_text(p, 'Fig.2 Homepage prototype wireframe')
+        set_text(p, 'Fig.2 StudyFlow homepage in Previewer')
     elif p.text.startswith('图x 首页实现截图'):
-        set_text(p, '图3 首页Previewer实现截图（待实际采集）')
+        set_text(p, '')
     elif p.text.startswith('Figx Index Page'):
-        set_text(p, 'Fig.3 StudyFlow homepage in Previewer')
+        set_text(p, '')
 
 # Remove template guidance paragraphs while preserving heading hierarchy and page design.
 remove_text = ('(简述项目发起', '(阐述Harmony', '(文字描述)', '(收集并整理', '线上绘图工具推荐', '或者 https://app.diagrams', '(对项目引入', '(文字描述，界面', '(提供首页中数据', 'Xx1页面详细设计', 'Xx2页面详细设计', '(简单文字描述)', '通过Previewer或者模拟器')
@@ -143,18 +153,27 @@ for p in list(doc.paragraphs):
 
 diagram = ROOT / 'docs' / 'studyflow_system_structure.png'
 make_diagram(diagram)
-home_mockup = ROOT / 'docs' / 'studyflow_home_prototype.png'
-make_home_mockup(home_mockup)
-# Insert the architecture diagram at its caption position.
-for p in doc.paragraphs:
-    if p.text.startswith('图 1 系统功能结构图'):
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture(str(diagram), width=Inches(6.0))
+# Insert images in the blank template paragraphs immediately before their captions.
+for index, p in enumerate(doc.paragraphs):
+    if p.text.startswith(('图 1 系统功能结构图', '图1 StudyFlow系统功能结构图')) and index > 0:
+        slot = doc.paragraphs[index - 1]
+        slot.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        slot.paragraph_format.keep_with_next = True
+        p.paragraph_format.keep_with_next = True
+        if index + 1 < len(doc.paragraphs):
+            doc.paragraphs[index + 1].paragraph_format.keep_together = True
+        slot.add_run().add_picture(str(diagram), width=Inches(6.0))
         break
-for p in doc.paragraphs:
-    if p.text.startswith('图2 首页原型设计示意'):
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture(str(home_mockup), width=Inches(3.0))
+home_screenshot = ROOT / 'docs' / 'screenshots' / '01_home.png'
+for index, p in enumerate(doc.paragraphs):
+    if p.text.startswith('图2 StudyFlow首页Previewer运行截图') and index > 0:
+        slot = doc.paragraphs[index - 1]
+        slot.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        slot.paragraph_format.keep_with_next = True
+        p.paragraph_format.keep_with_next = True
+        if index + 1 < len(doc.paragraphs):
+            doc.paragraphs[index + 1].paragraph_format.keep_together = True
+        slot.add_run().add_picture(str(home_screenshot), width=Inches(2.15))
         break
 
 def add_after(paragraph, text, style='Normal'):
@@ -172,6 +191,61 @@ for p in list(doc.paragraphs):
     elif p.text == '数据分析、远程资料与个人中心实现':
         add_after(p, '数据分析页面汇总Preferences中的学习记录，按最近七个自然日聚合分钟数，并按学科统计任务。资源服务创建独立HttpRequest，设置连接和读取超时，检查HTTP响应码后解析JSON；UI通过idle、loading、success、empty、error状态决定提示、列表和资源标题长度条形图。个人中心保存用户名称和每日目标；清除任务前弹出确认。')
 
+# Add only screenshots supplied from the user's running StudyFlow Previewer.
+references_heading = next(p for p in doc.paragraphs if p.text.strip() == '参考文献')
+gallery_heading_element = OxmlElement('w:p')
+references_heading._p.addprevious(gallery_heading_element)
+from docx.text.paragraph import Paragraph
+gallery_heading = Paragraph(gallery_heading_element, references_heading._parent)
+gallery_heading.style = 'Heading 2'
+gallery_heading.paragraph_format.page_break_before = True
+gallery_heading.add_run('StudyFlow Previewer运行界面')
+gallery_items = [
+    ('02_tasks.png', '图3 学习任务页面'),
+    ('03_calendar.png', '图4 学习日历页面'),
+    ('04_analysis_top.png', '图5 学习分析页面'),
+    ('05_analysis_resources.png', '图6 远程学习资源与接口数据'),
+    ('06_profile_jason.png', '图7 个人中心与昵称设置'),
+]
+for index, (filename, caption) in enumerate(gallery_items):
+    image_element = OxmlElement('w:p')
+    references_heading._p.addprevious(image_element)
+    image_paragraph = Paragraph(image_element, references_heading._parent)
+    image_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    image_paragraph.paragraph_format.keep_with_next = True
+    if index in (2, 4, 5):
+        image_paragraph.paragraph_format.page_break_before = True
+    image_width = Inches(6.0) if filename == '07_git_log.png' else Inches(1.75)
+    image_paragraph.add_run().add_picture(str(ROOT / 'docs' / 'screenshots' / filename), width=image_width)
+    caption_element = OxmlElement('w:p')
+    references_heading._p.addprevious(caption_element)
+    caption_paragraph = Paragraph(caption_element, references_heading._parent)
+    caption_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    caption_paragraph.paragraph_format.keep_together = True
+    caption_run = caption_paragraph.add_run(caption)
+    caption_run.font.size = Pt(10)
+
+# Keep the Git history attachment after the references so it cannot split or
+# force reference paragraphs onto an unexpected page.
+git_heading_element = OxmlElement('w:p')
+references_heading._p.addnext(git_heading_element)
+git_heading = Paragraph(git_heading_element, references_heading._parent)
+git_heading.style = 'Normal'
+git_heading.paragraph_format.page_break_before = True
+git_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+git_heading.add_run('附件：StudyFlow Git阶段提交记录')
+git_image_element = OxmlElement('w:p')
+git_heading._p.addnext(git_image_element)
+git_image = Paragraph(git_image_element, references_heading._parent)
+git_image.alignment = WD_ALIGN_PARAGRAPH.CENTER
+git_image.paragraph_format.keep_with_next = True
+git_image.add_run().add_picture(str(ROOT / 'docs' / 'screenshots' / '07_git_log.png'), width=Inches(6.0))
+git_caption_element = OxmlElement('w:p')
+git_image._p.addnext(git_caption_element)
+git_caption = Paragraph(git_caption_element, references_heading._parent)
+git_caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+git_caption.add_run('图8 DevEco Studio Git提交历史截图').font.size = Pt(10)
+
 # Explicit network interface schema. The request is a public test endpoint, not a campus backend.
 doc.add_paragraph('表3 远程学习资源接口字段', style='Normal')
 network_table = doc.add_table(rows=1, cols=3)
@@ -187,6 +261,13 @@ for row in [
 ]:
     cells=network_table.add_row().cells
     for i,v in enumerate(row): fill_cell(cells[i],v)
+
+# Keep the remote-interface table with the report body, before screenshots and references.
+api_heading = next(p for p in doc.paragraphs if p.text.strip() == '表3 远程学习资源接口字段')
+api_heading._p.getparent().remove(api_heading._p)
+network_table._tbl.getparent().remove(network_table._tbl)
+gallery_heading._p.addprevious(network_table._tbl)
+gallery_heading._p.addprevious(api_heading._p)
 
 # Replace the template's sample API tables with actual project schemas.
 tables = doc.tables

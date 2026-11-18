@@ -38,7 +38,7 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 | [HTTP 网络请求指南](https://developer.huawei.com/consumer/en/doc/harmonyos-guides/http-request/) | 核对 Network Kit、超时、响应码与异步请求 | 官方文档/API |
 | [Canvas 绘图指南](https://developer.huawei.com/consumer/en/doc/harmonyos-guides/arkts-drawing-customization-on-canvas/) | 评估原生动态图表能力 | 官方文档/API；本项目优先用原生 Progress 组件保证 Previewer 兼容 |
 
-兼容性依据：本地 SDK 路径 `DevEco Studio/sdk/default/openharmony`，工程 target SDK 26.0.0、compatible SDK 6.1.1。ArkTS 编译、PreviewBuild 编译与 HAP 打包已通过；本机 IDE 的 Previewer 面板仍显示加载失败，因此页面可视运行、交互与网络策略仍待复核。
+兼容性依据：本地 SDK 路径 `DevEco Studio/sdk/default/openharmony`，工程 target SDK 26.0.0、compatible SDK 6.1.1。ArkTS 编译、PreviewBuild 编译与 HAP 打包已通过；Previewer 的页面交互截图由用户提供；网络请求在本机命令行成功，具体 Previewer 网络策略仍需在目标设备环境复核。
 
 ## Previewer 复核步骤
 
@@ -47,6 +47,8 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 3. 依次操作五个底部页签；新增任务，打开详情后编辑、完成和删除；检查重启后数据是否保留。
 4. 在日历切换月份、选择日期；在我的页面记录学习分钟数并改每日目标。
 5. 进入分析页验证真实时长条形统计；检查远程资料 Loading、成功/失败和刷新。
-6. 保存实际 Previewer 页面截图和 Git 图形提交记录截图，再加入课程报告附件。
+6. 实际运行截图和 DevEco Studio Git 提交历史截图已加入课程报告附件；任务详情页截图未提供，因此报告没有放入示意图冒充运行截图。
 
-尚未由本执行环境实际操作 Previewer 图形界面，因此报告不伪称该项已验证，也不放入伪造截图。
+提交记录截图及五个主页面的实际运行截图已收录于课程报告。
+
+
