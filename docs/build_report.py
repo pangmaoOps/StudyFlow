@@ -198,7 +198,7 @@ references_heading._p.addprevious(gallery_heading_element)
 from docx.text.paragraph import Paragraph
 gallery_heading = Paragraph(gallery_heading_element, references_heading._parent)
 gallery_heading.style = 'Heading 2'
-gallery_heading.paragraph_format.page_break_before = True
+gallery_heading.paragraph_format.keep_with_next = True
 gallery_heading.add_run('StudyFlow Previewer运行界面')
 gallery_items = [
     ('02_tasks.png', '图3 学习任务页面'),
@@ -213,32 +213,38 @@ for index, (filename, caption) in enumerate(gallery_items):
     image_paragraph = Paragraph(image_element, references_heading._parent)
     image_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     image_paragraph.paragraph_format.keep_with_next = True
-    if index in (2, 4, 5):
-        image_paragraph.paragraph_format.page_break_before = True
-    image_width = Inches(6.0) if filename == '07_git_log.png' else Inches(1.75)
+    image_paragraph.paragraph_format.keep_together = True
+    image_paragraph.paragraph_format.line_spacing = 1.0
+    image_paragraph.paragraph_format.space_before = Pt(0)
+    image_paragraph.paragraph_format.space_after = Pt(0)
+    image_width = Inches(2.25)
     image_paragraph.add_run().add_picture(str(ROOT / 'docs' / 'screenshots' / filename), width=image_width)
     caption_element = OxmlElement('w:p')
     references_heading._p.addprevious(caption_element)
     caption_paragraph = Paragraph(caption_element, references_heading._parent)
     caption_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     caption_paragraph.paragraph_format.keep_together = True
+    caption_paragraph.paragraph_format.space_before = Pt(0)
+    caption_paragraph.paragraph_format.space_after = Pt(4)
     caption_run = caption_paragraph.add_run(caption)
     caption_run.font.size = Pt(10)
 
-# Keep the Git history attachment after the references so it cannot split or
-# force reference paragraphs onto an unexpected page.
+# Keep the Git history attachment after the references without forcing a page.
 git_heading_element = OxmlElement('w:p')
-references_heading._p.addnext(git_heading_element)
+last_reference = next(p for p in doc.paragraphs if p.text.startswith('[5] wuyukobe24.'))
+last_reference._p.addnext(git_heading_element)
 git_heading = Paragraph(git_heading_element, references_heading._parent)
 git_heading.style = 'Normal'
-git_heading.paragraph_format.page_break_before = True
+git_heading.paragraph_format.keep_with_next = True
 git_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
 git_heading.add_run('附件：StudyFlow Git阶段提交记录')
 git_image_element = OxmlElement('w:p')
 git_heading._p.addnext(git_image_element)
 git_image = Paragraph(git_image_element, references_heading._parent)
 git_image.alignment = WD_ALIGN_PARAGRAPH.CENTER
+git_image.paragraph_format.keep_together = True
 git_image.paragraph_format.keep_with_next = True
+git_image.paragraph_format.line_spacing = 1.0
 git_image.add_run().add_picture(str(ROOT / 'docs' / 'screenshots' / '07_git_log.png'), width=Inches(6.0))
 git_caption_element = OxmlElement('w:p')
 git_image._p.addnext(git_caption_element)
