@@ -15,6 +15,7 @@ struct Index {
   @State private resources: StudyResource[] = [];
   @State private detailId: string = '';
   @State private sessions: StudySession[] = [];
+  @State private totalStudyMinutes: number = 0;
   @State private settings: StudySettings = { displayName: '智炜', dailyGoalMinutes: 120, themeMode: 'light' };
   @State private calendarDate: Date = new Date();
   @State private selectedDay: number = new Date().getDate();
@@ -36,6 +37,7 @@ struct Index {
   private async loadLocalData(): Promise<void> {
     this.tasks = await StudyStore.load(getContext(this));
     this.sessions = await StudyStore.loadSessions();
+    this.totalStudyMinutes = this.sessions.reduce((total: number, item: StudySession) => total + item.minutes, 0);
     this.settings = await StudyStore.loadSettings();
   }
   private dateKey(day: number): string { return this.calendarDate.getFullYear() + '-' + (this.calendarDate.getMonth() + 1).toString().padStart(2, '0') + '-' + day.toString().padStart(2, '0'); }
@@ -84,7 +86,10 @@ struct Index {
     if (!Number.isFinite(mins) || mins < 1 || mins > 1440) { this.getUIContext().getPromptAction().showToast({ message: '请输入 1 至 1440 的分钟数' }); return; }
     const now = new Date();
     const session: StudySession = { id: Date.now().toString(), taskId: '', subject: '自习', minutes: mins, date: now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0') + '-' + now.getDate().toString().padStart(2, '0') };
-    this.sessions = [session, ...this.sessions]; StudyStore.saveSessions(this.sessions); this.getUIContext().getPromptAction().showToast({ message: '学习时长已记录' });
+    this.sessions = [session, ...this.sessions];
+    this.totalStudyMinutes += mins;
+    StudyStore.saveSessions(this.sessions);
+    this.getUIContext().getPromptAction().showToast({ message: '学习时长已记录' });
   }
   private saveSettings(): void {
     const goal = Number(this.goalInput);
@@ -123,7 +128,7 @@ struct Index {
         else { List({ space: 10 }) { ForEach(this.todayTasks(), (task: StudyTask) => ListItem() { TaskCard({ task: task, onToggle: (id: string) => this.toggle(id), onOpen: (id: string) => this.openTask(id) }); }); }.width('100%').layoutWeight(1); }
         Row({ space: 10 }) {
           this.statCard('本周完成', this.tasks.filter((t: StudyTask) => t.done).length.toString(), '项任务');
-          this.statCard('已记录学习', this.sessions.reduce((n: number, s: StudySession) => n + s.minutes, 0).toString(), '分钟');
+          this.statCard('已记录学习', this.totalStudyMinutes.toString(), '分钟');
         }.width('100%');
         Row({ space: 8 }) {
           TextInput({ placeholder: '学习分钟', text: this.sessionInput }).type(InputType.Number).height(48).layoutWeight(1).backgroundColor('#FFFFFF').borderRadius(24).onChange((v: string) => this.sessionInput = v);
@@ -170,7 +175,7 @@ struct Index {
     Scroll() {
       Column({ space: 16 }) {
         Text('学习分析').fontSize(24).fontWeight(FontWeight.Bold).fontColor('#202A43').alignSelf(ItemAlign.Start);
-        Row({ space: 12 }) { this.statCard('任务完成率', this.tasks.length === 0 ? '0%' : Math.round(this.tasks.filter((t: StudyTask) => t.done).length * 100 / this.tasks.length) + '%', ''); this.statCard('累计学习', this.sessions.reduce((sum: number, s: StudySession) => sum + s.minutes, 0).toString(), '分钟'); }
+        Row({ space: 12 }) { this.statCard('任务完成率', this.tasks.length === 0 ? '0%' : Math.round(this.tasks.filter((t: StudyTask) => t.done).length * 100 / this.tasks.length) + '%', ''); this.statCard('累计学习', this.totalStudyMinutes.toString(), '分钟'); }
         Column({ space: 12 }) {
           Text('最近7天学习时长').fontSize(16).fontWeight(FontWeight.Bold).fontColor('#29334D');
           ForEach(Array.from({ length: 7 }, (_: number, i: number) => i), (offset: number) => Row({ space: 8 }) {
@@ -187,12 +192,12 @@ struct Index {
           else if (this.resourceState === 'empty') { EmptyState({ title: '暂无远程资源', detail: '稍后刷新试试' }); }
           else {
             Text('本次获取 ' + this.resources.length + ' 项 · 资源标题长度分布').fontSize(12).fontColor('#747D91');
-            ForEach(this.resources.slice(0, 5), (item: StudyResource) => Row({ space: 8 }) {
+            ForEach(this.resources.slice(0, 8), (item: StudyResource) => Row({ space: 8 }) {
               Text(item.title.slice(0, 23)).fontSize(10).fontColor('#687188').width(96).maxLines(1);
               Progress({ value: Math.min(item.title.length, 100), total: 100, type: ProgressType.Linear }).color('#786AEC').layoutWeight(1);
               Text(item.title.length.toString()).fontSize(10).fontColor('#687188');
             }.width('100%').height(22));
-            List({ space: 8 }) { ForEach(this.resources.slice(0, 4), (r: StudyResource) => ListItem() { Column({ space: 4 }) { Text(r.title).fontSize(13).fontColor('#29334D').maxLines(2); Text(r.body).fontSize(11).fontColor('#9299A9').maxLines(2); }.alignItems(HorizontalAlign.Start).width('100%').padding(12).backgroundColor('#F7F7FB').borderRadius(12); }); }.height(230);
+            List({ space: 8 }) { ForEach(this.resources.slice(0, 8), (r: StudyResource) => ListItem() { Column({ space: 4 }) { Text(r.title).fontSize(13).fontColor('#29334D').maxLines(2); Text(r.body).fontSize(11).fontColor('#9299A9').maxLines(2); }.alignItems(HorizontalAlign.Start).width('100%').padding(12).backgroundColor('#F7F7FB').borderRadius(12); }); }.height(230);
           }
         }.width('100%').padding(18).backgroundColor('#FFFFFF').borderRadius(18);
         Column({ space: 12 }) {
